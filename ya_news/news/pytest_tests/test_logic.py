@@ -13,9 +13,12 @@ from news.models import Comment
 def test_anonymous_user_cant_create_comment(
     client, id_for_args, form_data
 ):
+    # arrange
     url = reverse('news:detail', args=id_for_args)
+    # act
     client.post(url, data=form_data)
     comment_count = Comment.objects.count()
+    # assert
     assert comment_count == 0
 
 
@@ -23,19 +26,25 @@ def test_anonymous_user_cant_create_comment(
 def test_user_can_create_comment(
         author_client, author, form_data, id_for_args
 ):
+    # arrange
     url = reverse('news:detail', args=id_for_args)
+    # act
     author_client.post(url, data=form_data)
-    assert Comment.objects.count() == 1
     new_comment = Comment.objects.get()
+    # assert
+    assert Comment.objects.count() == 1
     assert new_comment.text == form_data['text']
     assert new_comment.author == author
 
 
 # Если комментарий содержит запрещённые слова, он не будет опубликован... (3)
 def test_user_cant_use_bad_words(admin_client, form_data, id_for_args):
+    # arrange
     url = reverse('news:detail', args=id_for_args)
     form_data['text'] = 'негодяй'
+    # act
     response = admin_client.post(url, data=form_data)
+    # assert
     assertFormError(response, 'form', 'text', errors=WARNING)
     assert Comment.objects.count() == 0
 
@@ -44,15 +53,21 @@ def test_user_cant_use_bad_words(admin_client, form_data, id_for_args):
 def test_author_can_edit_comment(
         author_client, form_data, comment_id_for_args, comment
 ):
+    # arrange
     url = reverse('news:edit', args=comment_id_for_args)
+    # act
     author_client.post(url, form_data)
     comment.refresh_from_db()
+    # assert
     assert comment.text == form_data['text']
 
 
 def test_author_can_delete_note(author_client, comment_id_for_args):
+    # arrange
     url = reverse('news:delete', args=comment_id_for_args)
+    # act
     author_client.post(url)
+    # assert
     assert Comment.objects.count() == 0
 
 
@@ -60,15 +75,21 @@ def test_author_can_delete_note(author_client, comment_id_for_args):
 def test_other_user_cant_edit_comment(
         admin_client, form_data, comment, comment_id_for_args
 ):
+    # arrange
     url = reverse('news:edit', args=comment_id_for_args)
+    # act
     response = admin_client.post(url, form_data)
-    assert response.status_code == HTTPStatus.NOT_FOUND
     comment_from_db = Comment.objects.get(id=comment.id)
+    # assert
+    assert response.status_code == HTTPStatus.NOT_FOUND
     assert comment.text == comment_from_db.text
 
 
 def test_other_user_cant_delete_comment(admin_client, comment_id_for_args):
+    # arrange
     url = reverse('news:delete', args=comment_id_for_args)
+    # act
     response = admin_client.post(url)
+    # assert
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert Comment.objects.count() == 1

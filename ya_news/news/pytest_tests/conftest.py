@@ -20,15 +20,14 @@ def author_client(author, client):
 
 @pytest.fixture
 def news():
-    news_instance = News.objects.create(
+    return News.objects.create(
         title='Заголовок',
         text='Текст новости',
     )
-    return news_instance
 
 
 @pytest.fixture
-def ten_news():
+def more_news():
     today = datetime.today()
     all_news = [
         News(
@@ -38,32 +37,30 @@ def ten_news():
         )
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     ]
-    ten_news = News.objects.bulk_create(all_news)
-    return ten_news
+    return News.objects.bulk_create(all_news)
 
 
 @pytest.fixture
 def comment(author, news):
-    comment_instance = Comment.objects.create(
+    return Comment.objects.create(
         news=news,
         text='Tекст',
         author=author,
     )
-    return comment_instance
 
 
 @pytest.fixture
-def two_comment(author, news):
+def two_comments(author, news):
     now = timezone.now()
     for index in range(2):
-        two_comment = Comment.objects.create(
+        two_comments = Comment.objects.create(
             news=news,
             text=f'Tекст {index}',
             author=author,
         )
-        two_comment.created = now + timedelta(days=index)
-        two_comment.save()
-    return two_comment
+        two_comments.created = now + timedelta(days=index)
+        two_comments.save()
+    return two_comments
 
 
 @pytest.fixture
@@ -78,7 +75,6 @@ def comment_id_for_args(comment):
 
 @pytest.fixture
 def form_data():
-    form_data = {
+    return {
         'text': 'Comment'
     }
-    return form_data

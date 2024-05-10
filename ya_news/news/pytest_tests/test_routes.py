@@ -6,7 +6,7 @@ from pytest_django.asserts import assertRedirects
 
 
 # Проверка доступности страницы для анона через client(1,2,6)
-@pytest.mark.django_db  # Как это работает?
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     'name, args',
     (
@@ -18,8 +18,11 @@ from pytest_django.asserts import assertRedirects
     )
 )
 def test_pages_availability_for_anonymous_user(client, name, args):
+    # arrange
     url = reverse(name, args=args)
+    # act
     response = client.get(url)
+    # assert
     assert response.status_code == HTTPStatus.OK
 
 
@@ -41,8 +44,11 @@ def test_pages_availability_for_anonymous_user(client, name, args):
 def test_pages_availability_for_different_users(
         parametrized_client, name, args, expected_status
 ):
+    # arrange
     url = reverse(name, args=args)
+    # act
     response = parametrized_client.get(url)
+    # assert
     assert response.status_code == expected_status
 
 
@@ -55,8 +61,11 @@ def test_pages_availability_for_different_users(
     ),
 )
 def test_redirects(client, name, args):
+    # arrange
     login_url = reverse('users:login')
     url = reverse(name, args=args)
     expected_url = f'{login_url}?next={url}'
+    # act
     response = client.get(url)
+    # assert
     assertRedirects(response, expected_url)
